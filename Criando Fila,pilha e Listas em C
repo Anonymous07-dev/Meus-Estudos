@@ -1,0 +1,400 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define T_MAXIMO 10
+
+//Estruturas
+
+//Struct para Fila
+struct Fila
+{
+    int TFila;     //Var do tamanho da fila
+    int *dataFila; //Dados da fila
+    int primeiro;  //Primeiro elemento
+    int ultimo;    //Ultimo Elemento
+    int numItens;  //Numero total de itens da fila
+};
+//Struct para Lista
+struct NoLista
+{
+    struct NoLista *prox; //Struct para o nó
+    int dadosLista;        //Dados
+};
+//Struct para Pilha
+struct Pilha
+{
+    int TPilha;     //Tamanho da Pilha
+    int topo;       //Elemento do topo
+    int *dadosPilha; //Dados da Pilha
+};
+//Operações para manipulação da Fila, Lista e Pilha
+
+
+struct NoLista *novo_No(int new_data) //Cria um novo Nó
+{
+    struct NoLista *novo_No=(struct NoLista *)malloc(sizeof(struct NoLista)); //Alocação para o proximo nó
+    novo_No->dadosLista = new_data;      //Insere os novos dados
+    novo_No->prox = NULL;        //Coloca o proximo nó como Nulo
+
+    return novo_No;
+}
+void inserOrd(struct NoLista **ref_chave, struct NoLista *novo_laco) //Função para inserir dados ordenando-os.
+{
+    struct NoLista *noAtual;
+    if (*ref_chave == NULL || (*ref_chave)->dadosLista >= novo_laco->dadosLista)
+    {
+        novo_laco->prox = *ref_chave;
+        *ref_chave = novo_laco;
+    }
+    else
+    {
+        noAtual = *ref_chave;
+        while (noAtual->prox != NULL && noAtual->prox->dadosLista < novo_laco->dadosLista) 
+        //Enquanto o nó não for nulo, e o valor do novo laço ser maior que o atual,chama o proximo laço.
+        {
+            noAtual = noAtual->prox;
+        }
+        //Insere dados no laço
+        novo_laco->prox = noAtual->prox;
+        noAtual->prox = novo_laco;
+    }
+}
+int existeNalista(struct NoLista *chave, int n)//Testagem para verificar elemento
+{
+    struct NoLista *temp = chave; //Struct temporario para realizar Testagem
+    while (temp != NULL)
+    {
+        if (temp->dadosLista == n)//Se o dado existe retorna 1.
+        {
+            return 1;
+            break;
+        }
+        else
+            temp = temp->dadosLista; //Chama o proximo nó da lista
+    }
+    free(temp);// Apaga variavel temp
+}
+void deletaNo(struct NoLista **ref_chave, int key)
+{
+    //Salva de forma temporaria os nós
+    struct NoLista *temp = *ref_chave, *anterior;
+
+    // Caso o primeiro nó seja onde ira ser inserido
+    if (temp != NULL && temp->dadosLista == key)
+    {
+        *ref_chave = temp->prox; //S
+        free(temp);
+        return;
+    }
+
+    // Procura pelo no a ser deletado enquanto mantem registro do nó anterior
+    // para poder manter a ligação no atributo 'prox'
+    while (temp != NULL && temp->dadosLista != key)
+    {
+        anterior = temp;
+        temp = temp->prox;
+    }
+
+    // Retira o no da lista
+    anterior->prox = temp->prox;
+
+    free(temp); // libera a variavel temp
+}
+void printLista(struct NoLista *head)
+{
+	struct NoLista *temp = head;
+	while (temp != NULL)
+	{
+		printf("%d  ", temp->dadosLista);
+		temp = temp->prox;
+	}
+}
+//Operações Pilha
+void criaPilha(struct Pilha *p)
+{
+    p->topo = -1;
+    p->TPilha = T_MAXIMO;
+    p->dadosPilha = (int *)malloc(T_MAXIMO * sizeof(int));
+}
+int isPilhaVazia(struct Pilha *p)
+{
+    if (p->topo == -1)
+        return 1;
+    else
+        return 0;
+}
+
+int isPilhaCheia(struct Pilha *p)
+{
+    if (p->topo == p->TPilha - 1)
+        return 1;
+    else
+        return 0;
+}
+
+void empilha(struct Pilha *p, int v)
+{
+    p->topo++;
+    p->dadosPilha[p->topo] = v;
+}
+
+int desempilha(struct Pilha *p)
+{
+    int aux = p->dadosPilha[p->topo];
+    p->topo--;
+    return aux;
+}
+
+int retornaTopo(struct Pilha *p)
+{
+    return p->dadosPilha[p->topo];
+}
+//Operações Fila
+void criaFila(struct Fila *f)
+{
+    f->TFila = T_MAXIMO;
+    f->dataFila = (int *)malloc(f->TFila * sizeof(int));
+    f->primeiro = 0;
+    f->ultimo = -1;
+    f->numItens = 0;
+}
+
+void insereFila(struct Fila *f, int v)
+{
+    if (f->ultimo == f->TFila - 1)
+        f->ultimo = -1;
+
+    f->ultimo++;
+    f->dataFila[f->ultimo] = v;
+    f->numItens++;
+}
+
+int removeFila(struct Fila *f)
+{
+    int temp = f->dataFila[f->primeiro++];
+
+    if (f->primeiro == f->TFila)
+        f->primeiro = 0;
+
+    f->numItens--;
+    return temp;
+}
+
+int isFilaVazia(struct Fila *f)
+{
+    return (f->numItens == 0);
+}
+
+int isFilaCheia(struct Fila *f)
+{
+    return (f->numItens == f->TFila);
+}
+
+void mostrarFila(struct Fila *f)
+{
+    int cont, i;
+
+    for (cont = 0, i = f->primeiro; cont < f->numItens; cont++)
+    {
+        printf("%d\t", f->dataFila[i++]);
+        if (i == f->TFila)
+            i = 0;
+    }
+
+    printf("\n\n");
+}
+
+//Função principal
+void main()
+{
+    int menu = 1, val, resOP, op;
+
+    struct Fila umaFila;
+    struct Pilha minhapilha;
+    struct NoLista *lista = NULL;
+    int nEleLista = 0;
+
+    while (menu = 1)
+    {
+    
+        printf("\n 1 - FILA ");
+        printf("\n 2 - PILHA  ");
+        printf("\n 3 - LISTA ");
+        printf("\n 0 - SAIR ");
+        printf("\n\n ESCOLHA UMA DAS OPÇÕES ACIMA:  ");
+        scanf("%d", &menu);
+
+        switch (menu) // Abaixo teremos um case para cada estrutura de dados
+        {
+        case 0:
+            exit(0);
+
+        case 1: //Criando Fila
+
+            criaFila(&umaFila);
+
+            while (1)
+            {
+                printf("\n 1 - Inserir Elemento ");
+                printf("\n 2 - Remover Elemento  ");
+                printf("\n 3 - Verificar Fila (Cheia / Vazia) ");
+                printf("\n 0 - SAIR ");
+                printf("\n\n ESCOLHA UMA OPCAO:  ");
+                scanf("%d", &op);
+
+                switch (op)
+                {
+                case 0:
+                    exit(0); //Sai do programa
+
+                case 1: // Operação para inserir na fila
+                    if (isFilaCheia(&umaFila))
+                    {
+                        printf("\nA Fila esta Cheia!!!\n\n");
+                    }
+                    else
+                    {
+                        printf("\nValor: ");
+                        scanf("%d", &val);
+                        insereFila(&umaFila, val);
+                    }
+                    break;
+
+                case 2: //Remove da Fila
+                    if (isFilaVazia(&umaFila))
+                    {
+                        printf("\n A Fila esta vazia!!!\n\n");
+                    }
+                    else
+                    {
+                        resOP = removeFila(&umaFila);
+                        printf("\n%d O Item foi REMOVIDO!!!\n\n", resOP);
+                    }
+                    break;
+
+                case 3: //Mostra os elementos da fila
+                    printf("\n ITENS:  ");
+                    mostrarFila(&umaFila);
+                    break;
+
+                default:
+                    printf("\n Insira uma opção válida \n\n");
+                    break;
+
+                }
+            }
+
+        case 2: // Case para operações com pilhas
+            criaPilha(&minhapilha); // Função para criar pilha
+
+            while (1)
+            {
+                printf("\n1 - Inserir Elemento\n");
+                printf("2 - Remover Elemento\n");
+                printf("3 - Verificar Pilha\n");
+                printf("0 - Sair\n");
+                printf("\n Escolha uma das opções acima: ");
+                scanf("%d", &op);
+
+                switch (op)
+                {
+
+                case 0: //Sair do Programa
+                    exit(0);
+
+                case 1: //Insere elementos na pilha
+
+                    if (isPilhaCheia(&minhapilha) == 1)
+                        printf("\nPILHA CHEIA! \n");
+
+                    else
+                    {
+                        printf("\nValor: ");
+                        scanf("%d", &val);
+                        empilha(&minhapilha, val);
+                    }
+                    break;
+
+                case 2: //Remove Elementos da pilha
+                    if (isPilhaVazia(&minhapilha) == 1)
+                        printf("\nPILHA VAZIA! \n");
+
+                    else
+                    {
+                        resOP = desempilha(&minhapilha);
+                        printf("\n%d Item Desempilhado\n", resOP);
+                    }
+                    break;
+
+                case 3: //Mostra se a pilha está cheia ou Vazia e o 
+                    if (isPilhaCheia(&minhapilha) == 1)
+                    {
+                        printf("\nPILHA CHEIA! \n");
+                        printf("\nElemento no TOPO: %d\n", retornaTopo(&minhapilha));
+                    }
+                    else if (isPilhaCheia(&minhapilha) == 0)
+                    {
+                        printf("\nElemento no TOPO: %d\n", retornaTopo(&minhapilha));
+                    }
+                    else
+                    {
+                        printf("\nPILHA VAZIA! \n");
+                    }
+                    break;
+
+                default:
+                    printf("\nOPCAO INVALIDA! \n");
+
+                }
+            }
+        case 3: // Case para operações com Lista
+        {
+            while (1)
+            {
+                
+                printf("\n1-Inserir Elemento\n");
+                printf("2 - Remover Elemento\n");
+                printf("3 - Verificar Lista\n");
+                printf("0 - SAIR\n");
+                printf("\nESCOLHA UMA OPCAO: ");
+                scanf("%d", &op);
+
+                switch (op)
+                {
+                case 0:
+                    exit(0);
+                case 1: // Operação para Inserir elementos na Lista e também retorna se a lista estiver cheia
+                    if (nEleLista == T_MAXIMO){
+                        printf("A LISTA ESTÁ CHEIA!!!\n");
+                   }else{
+                        printf("Valor: ");
+                        scanf("%d", &val);
+                        inserOrd(&lista, novo_No(val));
+                        nEleLista++;
+                    }
+                    break;
+                case 2: // Operação para Remover da lista e retorna uma mensagem caso já esteja Vazia
+                    if (lista == NULL){
+                        printf("A LISTA ESTA VAZIA!!! \n"); 
+                        break;
+                    } else {
+                    printf("Valor a ser removido: "); scanf("%d", &val);
+                    int existe = existeNalista(lista, val);
+                    if (existe != 0) {
+                        deletaNo(&lista, val);
+                        printf("Elemento %d Removido\n", val);
+                        nEleLista--;
+                   } else {
+                        printf("O elemento não existe\n");} }
+                    break;
+                case 3: // Case para verificar elementos da Lista
+                    if (lista == NULL){
+                        printf("A LISTA ESTÁ VAZIA!!!\n");
+                    }
+                    printLista(lista);
+                    break;
+                }
+       }
+     }
+    }
+  }     
+} 
